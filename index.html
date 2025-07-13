@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl"> <!-- Set language to Hebrew and direction to Right-to-Left -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice-Controlled UI Mockup - Project Flow</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            direction: rtl; /* Ensure RTL for the whole body */
+            text-align: right; /* Default text alignment for RTL */
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1rem; /* Rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 1rem; /* Default padding for mobile */
+            width: 100%; /* Default width for mobile */
+            max-width: 600px; /* Max width for larger screens */
+            position: relative;
+            overflow: hidden; /* Hide overflow for screen transitions */
+            display: flex;
+            flex-direction: column;
+        }
+        @media (min-width: 768px) { /* On medium screens and up */
+            .container {
+                padding: 2rem;
+                width: 90%;
+            }
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 0.5rem;
+            height: 10px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 50%; /* Initial progress */
+            background-color: #4CAF50; /* Green progress */
+            border-radius: 0.5rem;
+            transition: width 0.5s ease-in-out;
+        }
+        .screen {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s ease-out;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: #f9fafb; /* Default background for most screens */
+            min-height: 300px; /* Increased height for content */
+            flex-direction: column;
+            justify-content: space-between; /* Distribute content and buttons */
+            align-items: center;
+            flex-grow: 1; /* Allow screens to take available height */
+        }
+        .screen.active {
+            display: flex; /* Show active screen */
+        }
+        /* Specific gradient backgrounds */
+        #entryScreen.screen.active,
+        #exitRestartScreen.screen.active {
+            background: linear-gradient(to right, #4CAF50, #800080); /* Green to Purple */
+            color: white; /* Ensure text is visible on dark gradient */
+        }
+        /* Override text color for specific elements on gradient screens if needed */
+        #entryScreen .text-gray-600,
+        #entryScreen .text-gray-800,
+        #exitRestartScreen .text-gray-700,
+        #exitRestartScreen .text-2xl {
+            color: white;
+        }
+
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 1000;
+        }
+        .message-box.show {
+            opacity: 1;
+        }
+        /* Character specific styles */
+        .mentor-bg { background-color: #bfdbfe; } /* Blue-200 */
+        .rosa-bg { background-color: #fbcfe8; } /* Pink-200 */
+        .user-bg { background-color: #d1fae5; } /* Green-200 */
+        .mentor-text { color: #1e40af; } /* Blue-800 */
+        .rosa-text { color: #be185d; } /* Pink-800 */
+        .user-text { color: #065f46; } /* Green-800 */
+
+        /* Specific screen layouts */
+        .screen-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 1rem 0;
+        }
+        .bottom-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* Centered horizontally */
+            align-items: center; /* Centered vertically for column layout */
+            gap: 0.75rem; /* Gap between buttons */
+            margin-top: 1.5rem;
+            width: 100%;
+        }
+        .bottom-buttons button {
+            flex-grow: 1; /* Allow buttons to grow */
+            min-width: 120px; /* Minimum width for buttons */
+        }
+        .play-button {
+            background-color: #4CAF50; /* Green */
+            border-radius: 9999px; /* Full circle */
+            width: 64px;
+            height: 64px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease-in-out;
+        }
+        .play-button:hover {
+            transform: scale(1.05);
+        }
+        .play-button svg {
+            fill: white;
+            width: 28px;
+            height: 28px;
+            margin-right: -4px; /* Adjust for triangle shape */
+        }
+        .text-area-box {
+            width: 90%;
+            min-height: 100px;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            background-color: #ffffff;
+            text-align: center; /* Center-justify text content */
+            font-size: 1.5rem; /* Default smaller for mobile (24px) */
+            margin-bottom: 1rem;
+            overflow-y: auto;
+        }
+        @media (min-width: 768px) {
+            .text-area-box {
+                font-size: 2.125rem; /* Larger for desktop (34px) */
+            }
+        }
+        .section-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: right; /* Labels remain right-aligned */
+            width: 90%;
+        }
+        .graph-placeholder, .stars-placeholder, .trail-placeholder {
+            width: 90%;
+            height: 120px;
+            background-color: #e0e7ff; /* Light blue for placeholders */
+            border: 1px dashed #93c5fd;
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #60a5fa;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        .trail-placeholder {
+            height: 80px;
+            background-color: #dcfce7; /* Light green */
+            border: 1px dashed #86efac;
+        }
+        .stars-placeholder {
+            height: 60px;
+            background-color: #fff7ed; /* Light orange */
+            border: 1px dashed #fdba74;
+        }
+
+        /* New styles for play icon buttons */
+        .play-text-button {
+            display: flex;
+            align-items: center;
+            background-color: #e5e7eb; /* Light gray background for buttons */
+            color: #374151; /* Dark gray text */
+            font-weight: bold;
+            padding: 0.75rem 1.25rem;
+            border-radius: 9999px; /* Pill shape */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            margin: 0.5rem 0; /* Vertical spacing */
+        }
+        .play-text-button:hover {
+            background-color: #d1d5db; /* Darker gray on hover */
+            transform: translateY(-2px);
+        }
+        .play-text-button svg {
+            fill: #374151; /* Dark gray fill for icon */
+            width: 20px;
+            height: 20px;
+            margin-left: 0.5rem; /* Space between text and icon in RTL */
+        }
+        .play-text-button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center to the right for RTL */
+            flex-grow: 1;
+        }
+        .bottom-buttons-grid {
+            display: flex;
+            justify-content: center; /* Centered horizontally */
+            align-items: center; /* Centered vertically */
+            width: 100%;
+            margin-top: 1.5rem;
+            flex-direction: column; /* Stack buttons vertically */
+        }
+        /* Disabled button styling */
+        .button-disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        /* Specific styling for Feedback Creation buttons */
+        #feedbackCreationScreen .bottom-buttons {
+            flex-direction: column; /* Stack buttons vertically */
+            align-items: center; /* Center buttons */
+            gap: 0.75rem; /* Gap between stacked buttons */
+        }
+        #feedbackCreationScreen .bottom-buttons button {
+            width: auto; /* Allow buttons to size based on content */
+            min-width: unset; /* Override min-width */
+            flex-grow: 0; /* Prevent buttons from growing */
+        }
+        /* Voice Level Indicator styling (Enhanced) */
+        .voice-level-indicator {
+            height: 20px; /* Taller */
+            width: 100%; /* Full width */
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            background-color: #e0e0e0; /* Default background when silent */
+            position: relative; /* For text overlay */
+            overflow: hidden; /* Hide overflow of fill */
+            display: flex; /* Use flex to align text */
+            align-items: center; /* Vertically center text */
+            justify-content: center; /* Horizontally center text */
+        }
+        .voice-level-fill { /* The actual moving bar */
+            position: absolute;
+            top: 0;
+            right: 0; /* Starts from right in RTL */
+            height: 100%;
+            background-color: #4CAF50; /* Green */
+            transition: width 0.1s ease-out, background-color 0.2s ease-out;
+            min-width: 10%; /* Base width for zero voice */
+            max-width: 100%;
+        }
+        .voice-status-text {
+            position: relative; /* Relative to voice-level-indicator */
+            z-index: 1; /* Ensure text is above the fill */
+            color: #333; /* Dark text on light background */
+            font-weight: bold;
+            text-shadow: 0px 0px 2px rgba(255,255,255,0.7); /* For readability */
+        }
+        /* Black circle with number */
+        .feedback-number-circle {
+            width: 40px;
+            height: 40px;
+            background-color: black;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 1rem; /* Space above the circle */
+        }
+        /* Specific styling for the single green "המשך" button */
+        .single-green-button {
+            display: inline-flex; /* Use inline-flex to shrink-wrap content */
+            align-items: center;
+            justify-content: center; /* Center content within the button */
+            padding: 0.75rem 1.5rem; /* Adjust padding */
+            flex-grow: 0; /* Do not grow to full width */
+            /* Removed min-width to allow content-based width */
+        }
+        .single-green-button svg {
+            fill: white;
+            width: 20px;
+            height: 20px;
+            margin-left: 0.5rem; /* Space between text and icon in RTL */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-bar-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+
+        <div id="entryScreen" class="screen active">
+            <div class="screen-content">
+                <h2 class="text-3xl font-bold mb-6">כניסה</h2>
+                <div class="flex items-center justify-center mb-4">
+                    <p class="text-lg ml-4">התחל</p> <div class="play-button" onclick="navigateTo('diagnosisScreen')">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-buttons">
+                </div>
+        </div>
+
+        <div id="diagnosisScreen" class="screen">
+            <div class="voice-level-indicator">
+                <div class="voice-level-fill"></div>
+                <span class="voice-status-text">מאזין...</span>
+            </div>
+            <div class="screen-content">
+                <div class="w-full h-8 rounded-lg mentor-bg mb-4"></div> <p class="section-label mentor-text">:מנחה</p> <div id="mentorTextDiagnosis" class="text-area-box mentor-text">
+                    <p>שְׁאַל אֶת רוֹזָה שְׁאֵלָה עֲמֻקָּה וּמִתְחַשֶּׁבֶת שֶׁמַּרְאָה שֶׁבֶּאֱמֶת הִקְשַׁבְתָּ.</p>
+                </div>
+                </div>
+            <div class="bottom-buttons-grid">
+                <div class="play-text-button-container">
+                    <div class="play-text-button bg-blue-500 hover:bg-blue-600 text-white" onclick="replayAudio()">
+                        השמע שוב
+                        <svg viewBox="0 0 24 24" fill="white">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                    <div class="play-text-button bg-pink-500 hover:bg-pink-600 text-white" onclick="navigateTo('rosaScreen')">
+                        הקשב לרוזה
+                        <svg viewBox="0 0 24 24" fill="white">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="rosaScreen" class="screen">
+            <div class="voice-level-indicator">
+                <div class="voice-level-fill"></div>
+                <span class="voice-status-text">מאזין...</span>
+            </div>
+            <div class="screen-content">
+                <div class="w-full h-8 rounded-lg rosa-bg mb-4"></div> <p class="section-label rosa-text">:רוזה</p> <div id="rosaText" class="text-area-box rosa-text">
+                    <p>אִמָּא שֶׁלִּי חוֹלָה וְאַבָּא מְטַפֵּל בָּהּ לְבַד. אֲנִי גָּרָה רָחוֹק וּמַרְגִּישָׁה אַשְׁמָה. לֹא יוֹדַעַת אֵיךְ לַעֲזֹר מֵרָחוֹק.</p>
+                </div>
+                </div>
+            <div class="bottom-buttons-grid">
+                <div class="play-text-button-container">
+                    <div class="play-text-button bg-pink-500 hover:bg-pink-600 text-white" onclick="replayAudio()">
+                        השמע שוב
+                        <svg viewBox="0 0 24 24" fill="white">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                    <div class="play-text-button bg-green-500 hover:bg-green-600 text-white" onclick="navigateTo('feedbackCreationScreen')">
+                        לענות לרוזה
+                        <svg viewBox="0 0 24 24" fill="white">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="feedbackCreationScreen" class="screen">
+            <div class="voice-level-indicator">
+                <div class="voice-level-fill"></div>
+                <span class="voice-status-text">מאזין...</span>
+            </div>
+            <div class="screen-content">
+                <div class="w-full h-8 rounded-lg user-bg mb-4"></div> <p class="section-label user-text">עכשיו אתה מדבר</p>
+                <div id="userTranscription" class="text-area-box text-gray-700">
+                    </div>
+                </div>
+            <div class="bottom-buttons">
+                <button onclick="navigateTo('rosaScreen')"
+                        class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition duration-300 ease-in-out">
+                    חזור לרוזה
+                </button>
+                <button onclick="navigateTo('diagnosisScreen')"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition duration-300 ease-in-out">
+                    חזור למנחה
+                </button>
+                <button id="tryAgainButton" onclick="tryAgainSpeaking()"
+                        class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-sm transition duration-300 ease-in-out button-disabled" style="display: none;" disabled>
+                    אני רוצה לנסות שוב
+                </button>
+                </div>
+        </div>
+
+        <div id="exitRestartScreen" class="screen">
+            <div class="screen-content">
+                <h2 class="text-2xl font-semibold mb-6">סיכום / סיום</h2>
+                <button onclick="navigateTo('diagnosisScreen')"
+                        class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 mb-4">
+                    התחל שוב
+                </button>
+                <button onclick="showMessage('יציאה מהאפליקציה...', 3000); console.log('Exit App');"
+                        class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75">
+                    צא
+                </button>
+            </div>
+            <div class="bottom-buttons">
+                </div>
+        </div>
+
+        <div id="mentorFeedbackScreen" class="screen">
+            <div class="voice-level-indicator">
+                <div class="voice-level-fill"></div>
+                <span class="voice-status-text">מאזין...</span>
+            </div>
+            <div class="screen-content">
+                <div class="w-full h-8 rounded-lg mentor-bg mb-4"></div>
+                <p class="section-label mentor-text">מנחה: משוב</p>
+                <div id="mentorTextFeedback" class="text-area-box mentor-text">
+                    <p>קִבַּלְתָּ שְׁנֵי כּוֹכָבִים – שָׁאַלְתָּ שְׁאֵלָה הַמַּרְאָה הֲבָנָה בְּסִיסִית שֶׁל הַסִּיטוּאַצְיָה.</p>
+                </div>
+                <div class="graph-placeholder">
+                    גרף (ריק כרגע)
+                </div>
+                <div class="trail-placeholder">
+                    מסלול עם מספרים (ריק כרגע)
+                </div>
+            </div>
+            <div class="bottom-buttons-grid"> <button onclick="navigateTo('mentorFeedbackStarsScreen')"
+                        class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition duration-300 ease-in-out single-green-button">
+                    המשך
+                    <svg viewBox="0 0 24 24" fill="white">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                </button>
+                <div class="feedback-number-circle">1</div> </div>
+        </div>
+
+        <div id="mentorFeedbackStarsScreen" class="screen">
+            <div class="voice-level-indicator">
+                <div class="voice-level-fill"></div>
+                <span class="voice-status-text">מאזין...</span>
+            </div>
+            <div class="screen-content">
+                <div class="w-full h-8 rounded-lg mentor-bg mb-4"></div>
+                <p class="section-label mentor-text">מנחה: משוב מפורט</p>
+                <div id="mentorTextFeedbackStars" class="text-area-box mentor-text">
+                    <p>יוֹפִי הִשְׁתַּפַּרְנוּ עוֹד קְצָת.</p>
+                    <p>שֶׁנַּמְשִׁיךְ לַשָּׁלָב הַבָּא?</p>
+                </div>
+                <div class="graph-placeholder">
+                    גרף (ריק כרגע)
+                </div>
+                <div class="stars-placeholder">
+                    כוכבים (ריקים כרגע)
+                </div>
+                <div class="trail-placeholder">
+                    מסלול עם מספרים (ריק כרגע)
+                </div>
+            </div>
+            <div class="bottom-buttons-grid"> <button onclick="navigateTo('exitRestartScreen')"
+                        class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition duration-300 ease-in-out single-green-button">
+                    המשך
+                    <svg viewBox="0 0 24 24" fill="white">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                </button>
+                <div class="feedback-number-circle">2</div> </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200 text-center" id="globalVoiceControl">
+            <button id="voiceToggleButton"
+                    class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75">
+                הפעל פקודה קולית
+            </button>
+        </div>
+    </div>
+
+    <div id="messageBox" class="message-box"></div>
+
+    <script>
+        // Function to show custom messages instead of alert()
+        function showMessage(message, duration = 3000) {
+            const msgBox = document.getElementById('messageBox');
+            msgBox.textContent = message;
+            msgBox.classList.add('show');
+            setTimeout(() => {
+                msgBox.classList.remove('show');
+            }, duration);
+        }
+
+        // --- UI Navigation Logic ---
+        let currentScreenId = 'entryScreen'; // Initial screen
+        const progressBar = document.getElementById('progressBar');
+
+        /**
+         * Updates the progress bar width.
+         * @param {number} percentage - The new percentage for the progress bar (0-100).
+         */
+        function updateProgressBar(percentage) {
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        // --- Voice Module Integration (Web Speech API) ---
+        const voiceToggleButton = document.getElementById('voiceToggleButton');
+        const userTranscriptionBox = document.getElementById('userTranscription'); // User's transcription box
+        const tryAgainButton = document.getElementById('tryAgainButton'); // Reference to the "אני רוצה לנסות שוב" button
+        const globalVoiceControlSection = document.getElementById('globalVoiceControl'); // Reference to the global voice control div
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+        const SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
+
+        let recognition;
+        let isGlobalListening = false; // Tracks if global voice control is active
+        let isUserScreenActiveListening = false; // Tracks if voice is active specifically for user screen
+        let autoAdvanceTimer; // Timer for automatic screen advance
+        let currentUtterance = null; // To store the current speech synthesis utterance
+        let hasUserSpoken = false; // New state to control user input on feedbackCreationScreen
+
+        // Audio context for voice level monitoring
+        let audioContext = null;
+        let analyser = null;
+        let microphone = null;
+        let scriptProcessor = null;
+        const VOICE_LEVEL_BASE_WIDTH = 10; // 10% of container width for zero voice
+
+        // List of known voice commands for checking if a transcript is a command
+        const knownVoiceCommands = [
+            'השמע שוב', // New Hebrew command for replay
+            'הקשב לרוזה',
+            'לענות לרוזה',
+            'חזור לרוזה',
+            'חזור למנחה',
+            'אני רוצה לנסות שוב',
+            'התחל',
+            'התחל שוב',
+            'צא',
+            'לחזור',
+            'המשך',
+            'לענות'
+        ].map(cmd => cmd.toLowerCase()); // Convert all to lowercase once for easier comparison
+
+        // Function to clear the auto-advance timer
+        function clearAutoAdvanceTimer() {
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+                console.log('Auto-advance timer cleared.');
+            }
+        }
+
+        // Function to stop current speech synthesis
+        function stopSpeaking() {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                console.log('Stopped current speech.');
+            }
+        }
+
+        // Function to speak text
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                stopSpeaking(); // Stop any ongoing speech before starting new one
+                currentUtterance = new SpeechSynthesisUtterance(text);
+                currentUtterance.lang = 'he-IL'; // Set language for speech
+                window.speechSynthesis.speak(currentUtterance);
+                console.log('Speaking:', text);
+            } else {
+                console.warn('Text-to-speech not supported in this browser.');
+                showMessage('Text-to-speech not supported in this browser.', 3000);
+            }
+        }
+
+        // Function for the "אני רוצה לנסות שוב" button
+        function tryAgainSpeaking() {
+            clearAutoAdvanceTimer(); // Stop auto-advance
+            if (userTranscriptionBox) {
+                userTranscriptionBox.textContent = ''; // Clear user's previous input
+            }
+            hasUserSpoken = false; // Reset the flag to allow new input
+            // Ensure recognition is active for the user screen
+            if (!isUserScreenActiveListening && recognition && !recognition.recognizing) {
+                try {
+                    recognition.start();
+                    isUserScreenActiveListening = true;
+                } catch (e) {
+                    console.error('Error restarting recognition for tryAgain:', e);
+                    showMessage('שגיאה בהפעלת זיהוי קולי.', 3000);
+                }
+            }
+            // Immediately disable the button after it's pressed
+            if (tryAgainButton) {
+                tryAgainButton.disabled = true;
+                tryAgainButton.classList.add('button-disabled');
+                tryAgainButton.style.display = 'none'; // Hide the button
+            }
+            showMessage('נסה לומר שוב.', 2000);
+        }
+
+        // --- Voice Level Monitoring Functions ---
+        function startVoiceLevelMonitoring() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.warn('getUserMedia not supported in this browser.');
+                return;
+            }
+
+            // Stop any existing monitoring before starting new one
+            stopVoiceLevelMonitoring();
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    microphone = stream;
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 256; // Smaller FFT size for faster updates
+                    const bufferLength = analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+
+                    const source = audioContext.createMediaStreamSource(stream);
+                    source.connect(analyser);
+
+                    // Use ScriptProcessorNode for basic volume analysis
+                    scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+                    analyser.connect(scriptProcessor);
+                    scriptProcessor.connect(audioContext.destination); // Connect to destination to keep it alive
+
+                    scriptProcessor.onaudioprocess = function() {
+                        analyser.getByteFrequencyData(dataArray); // Get frequency data
+
+                        // Calculate average volume (RMS-like from frequency data)
+                        let sum = 0;
+                        for (let i = 0; i < bufferLength; i++) {
+                            sum += dataArray[i];
+                        }
+                        const average = sum / bufferLength;
+
+                        // Map average to a width percentage (e.g., 0-128 range to 10-100%)
+                        // Normalize average to 0-1 range based on max possible (255)
+                        const normalizedVolume = Math.min(1, average / 128); // Cap at 1 for loud sounds
+                        let widthPercentage = VOICE_LEVEL_BASE_WIDTH + (normalizedVolume * (100 - VOICE_LEVEL_BASE_WIDTH));
+
+                        // Update the current voice level indicator
+                        const currentVoiceLevelFill = document.querySelector(`#${currentScreenId} .voice-level-fill`);
+                        const currentVoiceStatusText = document.querySelector(`#${currentScreenId} .voice-status-text`);
+
+                        if (currentVoiceLevelFill) {
+                            currentVoiceLevelFill.style.width = `${widthPercentage}%`;
+                            // Optional: dynamic color based on volume (e.g., green shades)
+                            // const greenIntensity = Math.floor(normalizedVolume * 200) + 50; // 50-250 range
+                            // currentVoiceLevelFill.style.backgroundColor = `rgb(0, ${greenIntensity}, 0)`;
+                        }
+                        if (currentVoiceStatusText) {
+                            if (normalizedVolume > 0.05) { // Threshold for "speaking"
+                                currentVoiceStatusText.textContent = 'מדבר...'; // Speaking
+                                currentVoiceStatusText.style.color = 'white'; // White text on colored bar
+                            } else {
+                                currentVoiceStatusText.textContent = 'מאזין...'; // Listening
+                                currentVoiceStatusText.style.color = '#333'; // Dark text on grey bar
+                            }
+                        }
+                    };
+                    console.log('Voice level monitoring started.');
+                })
+                .catch(function(err) {
+                    console.error('Error accessing microphone: ', err);
+                    showMessage(`שגיאה בגישה למיקרופון: ${err.name}. ודא/י שניתנה גישה.`, 7000);
+                    // Reset indicator to base width if microphone access fails
+                    const currentVoiceLevelFill = document.querySelector(`#${currentScreenId} .voice-level-fill`);
+                    const currentVoiceStatusText = document.querySelector(`#${currentScreenId} .voice-status-text`);
+                    if (currentVoiceLevelFill) {
+                        currentVoiceLevelFill.style.width = `${VOICE_LEVEL_BASE_WIDTH}%`;
+                    }
+                     if (currentVoiceStatusText) {
+                        currentVoiceStatusText.textContent = 'מיקרופון לא זמין';
+                        currentVoiceStatusText.style.color = 'red';
+                    }
+                });
+        }
+
+        function stopVoiceLevelMonitoring() {
+            if (microphone) {
+                microphone.getTracks().forEach(track => track.stop());
+                microphone = null;
+            }
+            if (scriptProcessor) {
+                scriptProcessor.disconnect();
+                scriptProcessor = null;
+            }
+            if (analyser) {
+                analyser.disconnect();
+                analyser = null;
+            }
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            // Reset all voice level indicators to base width and status text
+            document.querySelectorAll('.voice-level-fill').forEach(fill => {
+                fill.style.width = `${VOICE_LEVEL_BASE_WIDTH}%`;
+            });
+            document.querySelectorAll('.voice-status-text').forEach(text => {
+                text.textContent = 'מאזין...';
+                text.style.color = '#333';
+            });
+            console.log('Voice level monitoring stopped.');
+        }
+
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'he-IL'; // Set language to Hebrew for better recognition
+
+            // Define a grammar for commands
+            const grammar = '#JSGF V1.0; grammar commands; public <command> = ' + knownVoiceCommands.join(' | ') + ';';
+            const speechRecognitionList = new SpeechGrammarList();
+            speechRecognitionList.addFromString(grammar, 1);
+            recognition.grammars = speechRecognitionList;
+
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                console.log('SpeechRecognition onresult event:', event); // Log the entire event
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    const transcript = event.results[i][0].transcript;
+                    console.log(`Result ${i}: transcript='${transcript}', isFinal=${event.results[i].isFinal}`); // Log each result
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+
+                // Only update userTranscriptionBox if on feedbackCreationScreen
+                if (currentScreenId === 'feedbackCreationScreen' && userTranscriptionBox) {
+                    userTranscriptionBox.textContent = interimTranscript; // Show interim results in user box
+                    console.log('Updated userTranscriptionBox with interim:', interimTranscript);
+                }
+
+                if (finalTranscript) {
+                    console.log('Final transcript detected:', finalTranscript);
+                    const lowerCaseFinalTranscript = finalTranscript.toLowerCase().trim();
+                    let isCommand = false;
+
+                    // Check if the final transcript is a known command
+                    for (const cmd of knownVoiceCommands) {
+                        if (lowerCaseFinalTranscript === cmd) {
+                            isCommand = true;
+                            break;
+                        }
+                    }
+
+                    if (isCommand) {
+                        processVoiceCommand(lowerCaseFinalTranscript);
+                        clearAutoAdvanceTimer(); // Commands stop auto-advance
+                        stopSpeaking(); // Stop speaking if a command is given
+                        if (tryAgainButton && currentScreenId === 'feedbackCreationScreen') { // Disable try again button if a command was spoken on user screen
+                            tryAgainButton.disabled = true;
+                            tryAgainButton.classList.add('button-disabled');
+                            tryAgainButton.style.display = 'none'; // Hide the button
+                        }
+                    } else {
+                        // If it's not a command AND we are on the feedback creation screen
+                        if (currentScreenId === 'feedbackCreationScreen' && userTranscriptionBox) {
+                            if (!hasUserSpoken) { // Only process if user hasn't spoken yet
+                                userTranscriptionBox.textContent = finalTranscript; // Update user's specific transcription
+                                console.log('Updated userTranscriptionBox with final:', finalTranscript);
+                                clearAutoAdvanceTimer(); // Clear any existing timer before setting a new one
+                                autoAdvanceTimer = setTimeout(() => {
+                                    navigateTo('mentorFeedbackScreen'); // Auto-advance after 5 seconds
+                                }, 5000);
+                                console.log('Auto-advance timer started (5s).');
+                                hasUserSpoken = true; // Set flag after processing first input
+
+                                // Activate and show "אני רוצה לנסות שוב" button
+                                if (tryAgainButton) {
+                                    tryAgainButton.disabled = false;
+                                    tryAgainButton.classList.remove('button-disabled');
+                                    tryAgainButton.style.display = 'block'; // Show the button
+                                }
+                            } else {
+                                console.log("Ignoring subsequent voice input on user screen until 'try again' is pressed.");
+                                // Optionally, provide visual feedback that input is ignored
+                                showMessage('קלט קולי מושהה. לחץ "אני רוצה לנסות שוב" כדי לנסות שוב.', 3000);
+                            }
+                        }
+                    }
+                }
+            };
+
+            recognition.onend = () => {
+                console.log('SpeechRecognition onend event. isGlobalListening:', isGlobalListening, 'isUserScreenActiveListening:', isUserScreenActiveListening);
+                // If recognition stops and we are supposed to be listening (either globally or for user screen)
+                if (isGlobalListening || isUserScreenActiveListening) {
+                    recognition.start();
+                } else {
+                    // Fully stopped (neither global nor user screen listening)
+                    voiceToggleButton.textContent = 'הפעל פקודה קולית';
+                    voiceToggleButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    voiceToggleButton.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                    if (userTranscriptionBox) userTranscriptionBox.textContent = ''; // Clear user transcription on stop
+                    if (tryAgainButton) { // Disable and hide try again button on full stop
+                        tryAgainButton.disabled = true;
+                        tryAgainButton.classList.add('button-disabled');
+                        tryAgainButton.style.display = 'none';
+                    }
+                    clearAutoAdvanceTimer(); // Clear timer if recognition fully stops
+                    hasUserSpoken = false; // Reset hasUserSpoken on full stop
+                    stopVoiceLevelMonitoring(); // Ensure voice level monitoring stops when recognition fully stops
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                showMessage(`שגיאת קול: ${event.error}`, 5000);
+                isGlobalListening = false;
+                isUserScreenActiveListening = false;
+                voiceToggleButton.textContent = 'הפעל פקודה קולית';
+                voiceToggleButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                voiceToggleButton.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                if (tryAgainButton) { // Disable and hide try again button on error
+                    tryAgainButton.disabled = true;
+                    tryAgainButton.classList.add('button-disabled');
+                    tryAgainButton.style.display = 'none';
+                }
+                clearAutoAdvanceTimer(); // Clear timer on error
+                stopSpeaking(); // Stop speaking on error
+                stopVoiceLevelMonitoring(); // Stop voice level monitoring on error
+                hasUserSpoken = false; // Reset hasUserSpoken on error
+            };
+
+            // Global voice toggle button logic
+            voiceToggleButton.addEventListener('click', () => {
+                if (isGlobalListening) {
+                    recognition.stop();
+                    isGlobalListening = false;
+                    voiceToggleButton.textContent = 'הפעל פקודה קולית';
+                    voiceToggleButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    voiceToggleButton.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                    clearAutoAdvanceTimer(); // Clear timer when global voice is explicitly deactivated
+                    stopSpeaking(); // Stop speaking when global voice is deactivated
+                    stopVoiceLevelMonitoring(); // Stop voice level monitoring
+                    hasUserSpoken = false; // Reset hasUserSpoken on global toggle off
+                } else {
+                    try {
+                        recognition.start();
+                        isGlobalListening = true;
+                        voiceToggleButton.textContent = 'השבת פקודה קולית';
+                        voiceToggleButton.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                        voiceToggleButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                        showMessage('פקודות קוליות הופעלו!');
+                        // When global voice is activated, ensure tryAgainButton is disabled and hidden initially
+                        if (tryAgainButton) {
+                            tryAgainButton.disabled = true;
+                            tryAgainButton.classList.add('button-disabled');
+                            tryAgainButton.style.display = 'none';
+                        }
+                        // Start voice level monitoring if on a relevant screen
+                        if (['diagnosisScreen', 'rosaScreen', 'feedbackCreationScreen', 'mentorFeedbackScreen', 'mentorFeedbackStarsScreen'].includes(currentScreenId)) {
+                             startVoiceLevelMonitoring();
+                        }
+                    } catch (e) {
+                        showMessage('שגיאה בהפעלת זיהוי קולי. אנא ודא/י שניתנה גישה למיקרופון.', 5000);
+                        console.error('Error starting recognition:', e);
+                    }
+                }
+            });
+
+        } else {
+            voiceToggleButton.disabled = true;
+            showMessage('הדפדפן שלך אינו תומך ב-Web Speech API. פקודות קוליות לא יעבדו.', 7000);
+        }
+
+        /**
+         * Navigates to a specified screen by hiding the current one and showing the new one.
+         * @param {string} targetScreenId - The ID of the screen to navigate to.
+         */
+        function navigateTo(targetScreenId) {
+            const currentScreen = document.getElementById(currentScreenId);
+            if (currentScreen) {
+                currentScreen.classList.remove('active');
+            }
+
+            const targetScreen = document.getElementById(targetScreenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+                currentScreenId = targetScreenId; // Update the current screen ID
+                showMessage(`נווט אל: ${targetScreenId.replace('Screen', '')}`); // Show message in Hebrew
+                console.log(`Navigated to: ${targetScreenId}`);
+
+                // Stop any ongoing speech when navigating
+                stopSpeaking();
+                clearAutoAdvanceTimer(); // Clear any pending timers on navigation
+
+                // Update progress bar based on screen (example logic, can be refined)
+                let progress = 50; // Default
+                switch(targetScreenId) {
+                    case 'entryScreen': progress = 10; break;
+                    case 'diagnosisScreen': progress = 30; break;
+                    case 'rosaScreen': progress = 50; break;
+                    case 'feedbackCreationScreen': progress = 70; break;
+                    case 'mentorFeedbackScreen': progress = 85; break;
+                    case 'mentorFeedbackStarsScreen': progress = 95; break;
+                    case 'exitRestartScreen': progress = 100; break;
+                }
+                updateProgressBar(progress);
+
+                // --- Handle Voice Recognition and Text-to-Speech State based on Screen ---
+                if (targetScreenId === 'feedbackCreationScreen') {
+                    // Entering Feedback Creation Screen: auto-activate voice
+                    if (!isUserScreenActiveListening && recognition && !recognition.recognizing) {
+                        try {
+                            recognition.start();
+                            isUserScreenActiveListening = true;
+                            // Hide global voice control elements
+                            globalVoiceControlSection.style.display = 'none';
+                            if (userTranscriptionBox) userTranscriptionBox.textContent = ''; // Clear box on entry
+                            if (tryAgainButton) { // Ensure tryAgainButton is disabled and hidden on entry
+                                tryAgainButton.disabled = true;
+                                tryAgainButton.classList.add('button-disabled');
+                                tryAgainButton.style.display = 'none';
+                            }
+                            hasUserSpoken = false; // Reset hasUserSpoken when entering user screen
+                            startVoiceLevelMonitoring(); // Start voice level monitoring for user screen
+                        } catch (e) {
+                            console.error('Error starting recognition for user screen:', e);
+                            showMessage('שגיאה בהפעלת זיהוי קולי עבור מסך המשתמש.', 5000);
+                        }
+                    }
+                } else {
+                    // Leaving Feedback Creation Screen or other screen: manage global voice
+                    if (isUserScreenActiveListening) {
+                        recognition.stop(); // Stop if it was specifically active for user screen
+                        isUserScreenActiveListening = false;
+                    }
+                    // Show global voice control elements
+                    globalVoiceControlSection.style.display = 'block';
+                    // Reset global voice status display
+                    if (isGlobalListening) { // Restore global listening state
+                        voiceToggleButton.textContent = 'השבת פקודה קולית';
+                        voiceToggleButton.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                        voiceToggleButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                        if (!recognition.recognizing) { // Only restart if not already recognizing
+                            try {
+                                recognition.start();
+                            } catch (e) {
+                                console.error('Error restarting global recognition:', e);
+                            }
+                        }
+                    } else { // If global listening was off, set it to off
+                        voiceToggleButton.textContent = 'הפעל פקודה קולית';
+                        voiceToggleButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                        voiceToggleButton.classList.add('bg-indigo-500', 'hover:bg-indigo-600');
+                    }
+                    // Stop voice level monitoring if not on a screen that needs it constantly
+                    if (!['diagnosisScreen', 'rosaScreen', 'feedbackCreationScreen', 'mentorFeedbackScreen', 'mentorFeedbackStarsScreen'].includes(targetScreenId)) {
+                        stopVoiceLevelMonitoring();
+                    } else if (isGlobalListening) {
+                         startVoiceLevelMonitoring(); // Re-start if moving to relevant screen and global listening is on
+                    }
+                    hasUserSpoken = false; // Reset hasUserSpoken when leaving user screen
+                }
+
+                // Text-to-Speech for Mentor/Rosa screens
+                let textToSpeak = '';
+                if (targetScreenId === 'diagnosisScreen') {
+                    textToSpeak = document.getElementById('mentorTextDiagnosis').innerText;
+                } else if (targetScreenId === 'rosaScreen') {
+                    textToSpeak = document.getElementById('rosaText').innerText;
+                } else if (targetScreenId === 'mentorFeedbackScreen') {
+                    textToSpeak = document.getElementById('mentorTextFeedback').innerText;
+                } else if (targetScreenId === 'mentorFeedbackStarsScreen') {
+                    textToSpeak = document.getElementById('mentorTextFeedbackStars').innerText;
+                }
+
+                if (textToSpeak) {
+                    speakText(textToSpeak);
+                }
+
+            } else {
+                showMessage(`שגיאה: מסך '${targetScreenId}' לא נמצא.`, 5000);
+                console.error(`Error: Screen '${targetScreenId}' not found.`);
+            }
+        }
+
+        // Initialize the entry screen and progress bar on load
+        document.addEventListener('DOMContentLoaded', () => {
+            navigateTo('entryScreen');
+            updateProgressBar(50); // Initial progress as per requirement
+
+            // Automatically activate global voice commands on load
+            if (SpeechRecognition) {
+                try {
+                    recognition.start();
+                    isGlobalListening = true;
+                    voiceToggleButton.textContent = 'השבת פקודה קולית';
+                    voiceToggleButton.classList.remove('bg-indigo-500', 'hover:bg-indigo-600');
+                    voiceToggleButton.classList.add('bg-red-500', 'hover:bg-red-600');
+                    showMessage('פקודות קוליות הופעלו אוטומטית!');
+                    // Start voice level monitoring immediately on relevant screens
+                    if (['diagnosisScreen', 'rosaScreen', 'feedbackCreationScreen', 'mentorFeedbackScreen', 'mentorFeedbackStarsScreen'].includes(currentScreenId)) {
+                        startVoiceLevelMonitoring();
+                    }
+                } catch (e) {
+                    console.error('Error starting recognition on load:', e);
+                    showMessage('שגיאה בהפעלת זיהוי קולי אוטומטית. אנא ודא/י שניתנה גישה למיקרופון.', 5000);
+                }
+            }
+        });
+
+        // Modified replayAudio to use speakText
+        function replayAudio() {
+            let textToReplay = '';
+            // Get the text from the correct element based on current screen
+            if (currentScreenId === 'diagnosisScreen') {
+                textToReplay = document.getElementById('mentorTextDiagnosis').innerText;
+            } else if (currentScreenId === 'rosaScreen') {
+                textToReplay = document.getElementById('rosaText').innerText;
+            } else if (currentScreenId === 'mentorFeedbackScreen') {
+                textToReplay = document.getElementById('mentorTextFeedback').innerText;
+            } else if (currentScreenId === 'mentorFeedbackStarsScreen') {
+                textToReplay = document.getElementById('mentorTextFeedbackStars').innerText;
+            }
+
+            if (textToReplay) {
+                speakText(textToReplay);
+                showMessage('מנגן שוב את האודיו...', 2000);
+            } else {
+                showMessage('אין אודיו לנגן במסך זה.', 2000);
+            }
+        }
+
+
+        /**
+         * Processes the transcribed voice command and triggers UI actions.
+         * @param {string} command - The transcribed voice command.
+         */
+        function processVoiceCommand(command) {
+            console.log('Processing command:', command);
+
+            const lowerCaseCommand = command.toLowerCase();
+
+            if (lowerCaseCommand === 'השמע שוב' || lowerCaseCommand === 'אני רוצה לנסות שוב') {
+                replayAudio();
+                if (currentScreenId === 'feedbackCreationScreen') {
+                    tryAgainSpeaking();
+                }
+            } else if (lowerCaseCommand === 'go back to home' || lowerCaseCommand === 'go back to entry') {
+                navigateTo('entryScreen');
+            } else if (lowerCaseCommand === 'חזור לרוזה') {
+                navigateTo('rosaScreen');
+            } else if (lowerCaseCommand === 'חזור למנחה') {
+                navigateTo('diagnosisScreen');
+            } else if (lowerCaseCommand === 'go back' || lowerCaseCommand === 'לחזור') {
+                if (currentScreenId === 'rosaScreen') navigateTo('diagnosisScreen');
+                else if (currentScreenId === 'feedbackCreationScreen') navigateTo('rosaScreen');
+                else if (currentScreenId === 'mentorFeedbackScreen') navigateTo('feedbackCreationScreen');
+                else if (currentScreenId === 'mentorFeedbackStarsScreen') navigateTo('mentorFeedbackScreen');
+                else if (currentScreenId === 'exitRestartScreen') navigateTo('mentorFeedbackStarsScreen');
+                else showMessage('לא ניתן לחזור אחורה יותר.', 2000);
+            } else if (lowerCaseCommand === 'answer' || lowerCaseCommand === 'לענות') {
+                if (currentScreenId === 'diagnosisScreen' || currentScreenId === 'rosaScreen' || currentScreenId.includes('mentorFeedback')) {
+                    navigateTo('feedbackCreationScreen');
+                } else {
+                    showMessage('פקודת "לענות" אינה רלוונטית כרגע.', 2000);
+                }
+            } else if (lowerCaseCommand === 'הקשב לרוזה') {
+                if (currentScreenId === 'diagnosisScreen') {
+                    navigateTo('rosaScreen');
+                } else {
+                    showMessage('אתה כבר מקשיב לרוזה או לא במסך הנכון.', 2000);
+                }
+            } else if (lowerCaseCommand === 'לענות לרוזה') {
+                if (currentScreenId === 'rosaScreen') {
+                    navigateTo('feedbackCreationScreen');
+                } else {
+                    showMessage('פקודת "לענות לרוזה" אינה רלוונטית כרגע.', 2000);
+                }
+            }
+            else if (lowerCaseCommand === 'listen to mentor') {
+                if (currentScreenId !== 'diagnosisScreen') {
+                    navigateTo('diagnosisScreen');
+                } else {
+                    showMessage('אתה כבר מקשיב למנחה.', 2000);
+                }
+            } else if (lowerCaseCommand === 'listen to') {
+                 showMessage('לא ברור למי להקשיב. נסה "הקשב לרוזה" או "הקשב למנחה".', 3000);
+            } else if (lowerCaseCommand === 'continue' || lowerCaseCommand === 'המשך') {
+                if (currentScreenId === 'entryScreen') navigateTo('diagnosisScreen');
+                else if (currentScreenId === 'diagnosisScreen') navigateTo('rosaScreen');
+                else if (currentScreenId === 'rosaScreen') navigateTo('feedbackCreationScreen');
+                else if (currentScreenId === 'feedbackCreationScreen') navigateTo('mentorFeedbackScreen');
+                else if (currentScreenId === 'mentorFeedbackScreen') navigateTo('mentorFeedbackStarsScreen');
+                else if (currentScreenId === 'mentorFeedbackStarsScreen') navigateTo('exitRestartScreen');
+                else showMessage('אין לאן להמשיך.', 2000);
+            } else if (lowerCaseCommand === 'start again' || lowerCaseCommand === 'התחל שוב') {
+                navigateTo('diagnosisScreen'); // Changed to diagnosisScreen
+            } else if (lowerCaseCommand === 'exit' || lowerCaseCommand === 'צא') {
+                showMessage('יציאה מהאפליקציה...', 3000);
+                console.log('Exit App via voice command');
+            } else if (lowerCaseCommand === 'התחל') {
+                navigateTo('diagnosisScreen');
+            }
+            else {
+                showMessage(`פקודה "${command}" לא זוהתה.`, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
